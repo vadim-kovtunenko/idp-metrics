@@ -189,15 +189,15 @@ def line_chart_initiatives(df: pd.DataFrame) -> go.Figure:
     """
     Линейная диаграмма: количество заведённых инициатив по месяцам.
     Три линии: GigaSearch, GigaQuery, Summarization.
-    Y: 0–60, X: месяцы. Легенда над графиком.
+    Y: 0–60, X: месяцы. Легенда под графиком.
     """
     x = _format_month_axis(df.index)
     layout = get_chart_layout_overrides()
     layout["showlegend"] = True
     layout["legend"] = {
         "orientation": "h",
-        "yanchor": "bottom",
-        "y": 1.02,
+        "yanchor": "top",
+        "y": -0.2,
         "xanchor": "center",
         "x": 0.5,
         "font": {"color": COLORS["axis_text"], "size": 11},
@@ -205,7 +205,9 @@ def line_chart_initiatives(df: pd.DataFrame) -> go.Figure:
         "bordercolor": "rgba(0,0,0,0)",
     }
     layout["margin"]["t"] = 36
-    layout["margin"]["b"] = 50
+    layout["margin"]["b"] = 78
+    layout["margin"]["l"] = 45
+    layout["margin"]["r"] = 45
     layout["yaxis"]["range"] = [0, 60]
     layout["yaxis"]["tickformat"] = ",.0f"
     layout["yaxis"]["tickvals"] = [15, 30, 45, 60]

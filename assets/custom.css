@@ -4,7 +4,7 @@
   --dashboard-bg: #2A644E;
   --chart-bg: #1F5542;
   --page-gap: 1.5rem;
-  --row-gap: 2rem;
+  --row-gap: 1.2rem; /* было 2rem, уменьшено на 40% */
   --chart-height: 266px; /* 30% less than 380px */
   --chart-label-color: rgba(255, 255, 255, 0.7); /* same as axis labels on diagrams */
   --font-main: Helvetica, Arial, sans-serif;
