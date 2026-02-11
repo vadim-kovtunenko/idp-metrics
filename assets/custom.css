@@ -1,0 +1,309 @@
+/* IDP Dashboard — adaptive layout, even stretch */
+
+:root {
+  --dashboard-bg: #2A644E;
+  --chart-bg: #1F5542;
+  --page-gap: 1.5rem;
+  --row-gap: 2rem;
+  --chart-height: 266px; /* 30% less than 380px */
+  --chart-label-color: rgba(255, 255, 255, 0.7); /* same as axis labels on diagrams */
+  --font-main: Helvetica, Arial, sans-serif;
+  --kpi-value-size: 1.75rem;
+  --kpi-badge-height: 1.45rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Single root: equal padding left/right, full width */
+.dashboard {
+  width: 100%;
+  min-height: 100vh;
+  padding: 1rem var(--page-gap);
+  background-color: var(--dashboard-bg);
+  font-family: var(--font-main);
+}
+
+.dashboard-header {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.dashboard-title {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Two equal columns; minmax(0,1fr) so Plotly min-width doesn't break equal split */
+.charts-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--row-gap);
+  width: 100%;
+}
+
+.charts-row + .charts-row {
+  margin-top: var(--row-gap);
+}
+
+@media (max-width: 900px) {
+  .charts-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Grid item: must shrink so columns stay equal (Plotly has min-width) */
+.chart-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  background-color: var(--chart-bg);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.chart-card.gigasearch-card {
+  grid-column: 1 / -1;
+}
+
+/* GigaSearch filter: row of buttons below the graph, slightly narrower than graph, no radio circles */
+.gigasearch-filter-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+  width: 92%;
+  max-width: 100%;
+  margin-top: 0.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  min-width: 0;
+}
+
+.gigasearch-filter-buttons label {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0.5rem 0.25rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.gigasearch-filter-buttons label:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.gigasearch-filter-buttons input,
+.chart-filter-buttons input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Shared filter bar (Summarization, GigaQuery): same look as GigaSearch bar, slightly narrower */
+.chart-filter-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+  width: 82%;
+  max-width: 100%;
+  margin-top: 0.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  min-width: 0;
+}
+
+.chart-filter-buttons label {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0.5rem 0.25rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.chart-filter-buttons label:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+/* Selected state: neutral gray, clearly distinct from unselected */
+.gigasearch-filter-buttons label:has(input:checked),
+.chart-filter-buttons label:has(input:checked) {
+  background-color: rgba(255, 255, 255, 0.32);
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #fff;
+}
+
+.gigasearch-filter-buttons label:has(input:checked):hover,
+.chart-filter-buttons label:has(input:checked):hover {
+  background-color: rgba(255, 255, 255, 0.38);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.chart-card-header {
+  flex-shrink: 0;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.chart-card-title {
+  color: var(--chart-label-color);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.35rem 0;
+  text-align: center;
+}
+
+.kpi-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.kpi-value {
+  color: #fff;
+  font-size: var(--kpi-value-size);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.kpi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: var(--kpi-badge-height);
+  line-height: var(--kpi-badge-height);
+  box-sizing: border-box;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0 1rem;
+  border-radius: 6px;
+  font-family: var(--font-main);
+}
+
+.kpi-triangle {
+  width: 0.85rem;
+  height: 0.85rem;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.kpi-badge-text {
+  color: #fff;
+}
+
+/* Graph: fill card width */
+.dashboard-chart {
+  width: 100%;
+  min-width: 0;
+  height: var(--chart-height) !important;
+  max-height: var(--chart-height) !important;
+  flex: 1 1 auto;
+  margin-top: 0;
+}
+
+.dashboard-chart .js-plotly-plot,
+.dashboard-chart .plotly,
+.dashboard-chart .plot-container {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: var(--chart-height) !important;
+}
+
+/* Колонка: сверху рамка графика, снизу плашки за её границей, ширина плашек = ширине рамки */
+.initiatives-column {
+  grid-column: span 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Карточка — только заголовок и график (рамка графика) */
+.initiatives-chart-card {
+  min-width: 0;
+}
+
+/* Плашки внизу за рамкой графика, ширина ряда = ширине карточки графика */
+.initiatives-column .initiative-plates-row {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 0 auto;
+  min-height: 92px;
+  box-sizing: border-box;
+}
+
+/* Каждая плашка — отдельная карточка в стиле основных графиков, равная ширина */
+.initiative-plate {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.75rem 0.5rem;
+  background-color: var(--chart-bg);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.initiative-plate .chart-card-title {
+  margin: 0 0 0.2rem 0;
+}
+
+.initiative-plate .kpi-row {
+  margin: 0;
+}
+
+.initiative-delta-badge {
+  font-size: 0.8rem;
+}
+
+@media (max-width: 480px) {
+  .dashboard {
+    padding: 0.75rem var(--page-gap);
+  }
+  .dashboard-chart,
+  .dashboard-chart .js-plotly-plot,
+  .dashboard-chart .plotly {
+    height: 210px !important;
+  }
+}
