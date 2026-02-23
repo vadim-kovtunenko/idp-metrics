@@ -1,12 +1,12 @@
 /* IDP Dashboard — adaptive layout, even stretch */
 
 :root {
-  --dashboard-bg: #2A644E;
-  --chart-bg: #1F5542;
+  --dashboard-bg: #DFE4E9;
+  --chart-bg: #FAFAFA;
   --page-gap: 1.5rem;
   --row-gap: 1.2rem; /* было 2rem, уменьшено на 40% */
   --chart-height: 266px; /* 30% less than 380px */
-  --chart-label-color: rgba(255, 255, 255, 0.7); /* same as axis labels on diagrams */
+  --chart-label-color: #000000;
   --font-main: Helvetica, Arial, sans-serif;
   --kpi-value-size: 1.75rem;
   --kpi-badge-height: 1.45rem;
@@ -33,7 +33,7 @@
 }
 
 .dashboard-title {
-  color: #fff;
+  color: #000;
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
@@ -64,10 +64,10 @@
   flex-direction: column;
   gap: 0.2rem;
   background-color: var(--chart-bg);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 10px;
   padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .chart-card.gigasearch-card {
@@ -97,16 +97,16 @@
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
-  background-color: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #333;
+  background-color: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.15);
   cursor: pointer;
   transition: background-color 0.15s, border-color 0.15s;
 }
 
 .gigasearch-filter-buttons label:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.45);
+  background-color: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.25);
 }
 
 .gigasearch-filter-buttons input,
@@ -141,30 +141,30 @@
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
-  background-color: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #333;
+  background-color: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.15);
   cursor: pointer;
   transition: background-color 0.15s, border-color 0.15s;
 }
 
 .chart-filter-buttons label:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.45);
+  background-color: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.25);
 }
 
-/* Selected state: neutral gray, clearly distinct from unselected */
+/* Selected state — чёрно-белые тона */
 .gigasearch-filter-buttons label:has(input:checked),
 .chart-filter-buttons label:has(input:checked) {
-  background-color: rgba(255, 255, 255, 0.32);
-  border-color: rgba(255, 255, 255, 0.55);
-  color: #fff;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-color: rgba(0, 0, 0, 0.5);
+  color: #000;
 }
 
 .gigasearch-filter-buttons label:has(input:checked):hover,
 .chart-filter-buttons label:has(input:checked):hover {
-  background-color: rgba(255, 255, 255, 0.38);
-  border-color: rgba(255, 255, 255, 0.6);
+  background-color: rgba(0, 0, 0, 0.28);
+  border-color: rgba(0, 0, 0, 0.6);
 }
 
 .chart-card-header {
@@ -190,7 +190,7 @@
 }
 
 .kpi-value {
-  color: #fff;
+  color: #000;
   font-size: var(--kpi-value-size);
   font-weight: 700;
   line-height: 1;
@@ -203,7 +203,7 @@
   height: var(--kpi-badge-height);
   line-height: var(--kpi-badge-height);
   box-sizing: border-box;
-  color: #fff;
+  color: #1a3d2e;
   font-size: 0.8rem;
   font-weight: 600;
   padding: 0 1rem;
@@ -219,7 +219,7 @@
 }
 
 .kpi-badge-text {
-  color: #fff;
+  color: #1a3d2e;
 }
 
 /* Graph: fill card width */
@@ -254,6 +254,13 @@
   min-width: 0;
 }
 
+/* Легенда графика инициатив: бублик ближе к тексту (сдвиг подписи влево) */
+#chart-initiatives .legend .legendtext,
+#chart-initiatives .legend .legendtext > text,
+#chart-initiatives .legend [class*="legendtext"] {
+  transform: translateX(-8px);
+}
+
 /* Плашки внизу за рамкой графика, ширина ряда = ширине карточки графика */
 .initiatives-column .initiative-plates-row {
   display: flex;
@@ -278,15 +285,20 @@
   gap: 0.4rem;
   padding: 0.75rem 0.5rem;
   background-color: var(--chart-bg);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
   text-align: center;
 }
 
 .initiative-plate .chart-card-title {
   margin: 0 0 0.2rem 0;
+  color: #000;
+}
+
+.initiative-plate .kpi-value {
+  color: #000;
 }
 
 .initiative-plate .kpi-row {

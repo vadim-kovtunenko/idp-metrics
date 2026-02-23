@@ -69,7 +69,7 @@ def kpi_card(title: str, current: float, pct_change: float) -> html.Div:
                             html.Span(pct_str, className="kpi-badge-text"),
                         ],
                         className="kpi-badge",
-                        style={"backgroundColor": COLORS["kpi_badge_bg"]},
+                        style={"backgroundColor": COLORS["kpi_badge_bg"], "border": f"1px solid {COLORS['kpi_badge_border']}"},
                     ),
                 ],
                 className="kpi-row",

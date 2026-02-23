@@ -5,7 +5,7 @@ Each chart function accepts data and returns a Plotly figure with shared theme.
 import pandas as pd
 import plotly.graph_objects as go
 
-from config.theme import COLORS, get_chart_layout_overrides
+from config.theme import COLORS, CHART_ACCENT_COLORS, get_chart_layout_overrides, hex_to_rgba
 
 
 def _format_month_axis(dates: pd.DatetimeIndex) -> list:
@@ -43,7 +43,9 @@ def line_chart_gigasearch(df: pd.DataFrame, y_min: float, y_max: float) -> go.Fi
             x=x,
             y=y,
             mode="lines",
-            line=dict(color=COLORS["line_primary"], width=2),
+            fill="tozeroy",
+            fillcolor=hex_to_rgba(COLORS["line_primary"], 0.06),
+            line=dict(color=COLORS["line_primary"], width=2, shape="spline", smoothing=0.2),
         )
     )
 
@@ -73,7 +75,9 @@ def line_chart_rag_common_sbol(df: pd.DataFrame) -> go.Figure:
             x=x,
             y=y,
             mode="lines",
-            line=dict(color=COLORS["line_primary"], width=2),
+            fill="tozeroy",
+            fillcolor=hex_to_rgba(COLORS["line_primary"], 0.06),
+            line=dict(color=COLORS["line_primary"], width=2, shape="spline", smoothing=0.2),
         )
     )
 
@@ -104,7 +108,9 @@ def line_chart_rag_common(df: pd.DataFrame) -> go.Figure:
             x=x,
             y=y,
             mode="lines",
-            line=dict(color=COLORS["line_primary"], width=2),
+            fill="tozeroy",
+            fillcolor=hex_to_rgba(COLORS["line_primary"], 0.06),
+            line=dict(color=COLORS["line_primary"], width=2, shape="spline", smoothing=0.2),
         )
     )
 
@@ -133,7 +139,9 @@ def line_chart_summarization(df: pd.DataFrame) -> go.Figure:
             x=x,
             y=y,
             mode="lines",
-            line=dict(color=COLORS["line_primary"], width=2),
+            fill="tozeroy",
+            fillcolor=hex_to_rgba(COLORS["line_primary"], 0.06),
+            line=dict(color=COLORS["line_primary"], width=2, shape="spline", smoothing=0.2),
         )
     )
 
@@ -162,7 +170,9 @@ def line_chart_gigaquery(df: pd.DataFrame) -> go.Figure:
             x=x,
             y=y,
             mode="lines",
-            line=dict(color=COLORS["line_primary"], width=2),
+            fill="tozeroy",
+            fillcolor=hex_to_rgba(COLORS["line_primary"], 0.06),
+            line=dict(color=COLORS["line_primary"], width=2, shape="spline", smoothing=0.2),
         )
     )
 
@@ -177,11 +187,11 @@ def line_chart_gigaquery(df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-# Цвета линий графика инициатив (Hex)
+# Цвета линий графика инициатив (три серии)
 INITIATIVES_LINE_COLORS = {
-    "GigaSearch": "#FFA400",
-    "GigaQuery": "#FF7400",
-    "Summarization": "#FF4200",
+    "GigaSearch": CHART_ACCENT_COLORS[0],
+    "GigaQuery": CHART_ACCENT_COLORS[1],
+    "Summarization": CHART_ACCENT_COLORS[2],
 }
 
 
@@ -203,25 +213,57 @@ def line_chart_initiatives(df: pd.DataFrame) -> go.Figure:
         "font": {"color": COLORS["axis_text"], "size": 11},
         "bgcolor": "rgba(0,0,0,0)",
         "bordercolor": "rgba(0,0,0,0)",
+        "itemwidth": 30,
+        "tracegroupgap": 0,
     }
     layout["margin"]["t"] = 36
     layout["margin"]["b"] = 78
-    layout["margin"]["l"] = 45
-    layout["margin"]["r"] = 45
+    layout["margin"]["l"] = 40
+    layout["margin"]["r"] = 20
     layout["yaxis"]["range"] = [0, 60]
+    layout["yaxis"]["autorange"] = False
     layout["yaxis"]["tickformat"] = ",.0f"
     layout["yaxis"]["tickvals"] = [15, 30, 45, 60]
     layout["yaxis"]["ticktext"] = ["15", "30", "45", "60"]
+    # Ось X: 12 месяцев + пустая категория для трасс легенды; видим только [0, 11] — на всю ширину
+    layout["xaxis"]["categoryarray"] = list(x) + [""]
+    layout["xaxis"]["categoryorder"] = "array"
+    layout["xaxis"]["range"] = [0, 11]
+    layout["xaxis"]["autorange"] = False
+    layout["xaxis"]["fixedrange"] = True
 
     fig = go.Figure()
+    # Основные линии графика (без маркеров на графике)
     for name, col in [("GigaSearch", "gigasearch"), ("GigaQuery", "gigaquery"), ("Summarization", "summarization")]:
+        color = INITIATIVES_LINE_COLORS[name]
         fig.add_trace(
             go.Scatter(
                 x=x,
                 y=df[col].tolist(),
                 mode="lines",
                 name=name,
-                line=dict(color=INITIATIVES_LINE_COLORS[name], width=2),
+                showlegend=False,
+                fill="tozeroy",
+                fillcolor=hex_to_rgba(color, 0.06),
+                line=dict(color=color, width=2, shape="spline", smoothing=0.2),
+            )
+        )
+    # Только для легенды: «пончики» в цветах линий; точка за пределами видимой области
+    for name in ["GigaSearch", "GigaQuery", "Summarization"]:
+        color = INITIATIVES_LINE_COLORS[name]
+        fig.add_trace(
+            go.Scatter(
+                x=[""],  # категория вне основных 12 месяцев — не попадёт в range [-0.5, 11.5]
+                y=[-10],
+                mode="markers",
+                name=name,
+                showlegend=True,
+                marker=dict(
+                    symbol="circle-open",
+                    size=11,
+                    line=dict(width=3, color=color),
+                    color=color,
+                ),
             )
         )
     fig.update_layout(**layout)
