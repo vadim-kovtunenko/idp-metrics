@@ -14,13 +14,19 @@ import threading
 import webbrowser
 
 import dash
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 
 from components.charts import line_chart_gigasearch
 from components.kpi import format_kpi_value, kpi_badge_children
 from config.theme import COLORS
 from data.sample_data import get_gigaquery_data, get_gigasearch_data, get_summarization_data
-from layout.dashboard import _pct_change_current_vs_previous, build_layout
+from layout.dashboard import (
+    ALPHA_SIGMA_FILTER_OPTIONS,
+    GIGASEARCH_FILTER_OPTIONS,
+    SERVICES_SLIDE_TITLES,
+    _pct_change_current_vs_previous,
+    build_layout,
+)
 
 # Create Dash app; assets (e.g. assets/custom.css) are loaded automatically
 app = dash.Dash(
@@ -31,52 +37,88 @@ app = dash.Dash(
 app.layout = build_layout
 
 
-@app.callback(
-    [
-        Output("chart-gigasearch", "figure"),
-        Output("gigasearch-kpi-value", "children"),
-        Output("gigasearch-kpi-badge", "children"),
-    ],
-    Input("gigasearch-filter", "value"),
-)
-def update_gigasearch(filter_value):
-    df, y_min, y_max = get_gigasearch_data(filter_value)
-    fig = line_chart_gigasearch(df, y_min, y_max)
-    current = df["calls"].iloc[-1]
-    pct = _pct_change_current_vs_previous(df["calls"])
-    return fig, format_kpi_value(current), kpi_badge_children(pct)
+def _get_services_options(slide_index: int):
+    if slide_index == 0:
+        return GIGASEARCH_FILTER_OPTIONS
+    return ALPHA_SIGMA_FILTER_OPTIONS
 
 
 @app.callback(
-    [
-        Output("chart-summarization", "figure"),
-        Output("summarization-kpi-value", "children"),
-        Output("summarization-kpi-badge", "children"),
-    ],
-    Input("summarization-filter", "value"),
+    Output("services-slide-index", "data"),
+    Input("services-slide-prev", "n_clicks"),
+    Input("services-slide-next", "n_clicks"),
+    State("services-slide-index", "data"),
 )
-def update_summarization(filter_value):
-    df, y_min, y_max = get_summarization_data(filter_value)
-    fig = line_chart_gigasearch(df, y_min, y_max)
-    current = df["calls"].iloc[-1]
-    pct = _pct_change_current_vs_previous(df["calls"])
-    return fig, format_kpi_value(current), kpi_badge_children(pct)
+def update_services_slide(prev_clicks, next_clicks, current_index):
+    from dash import ctx
+    if not ctx.triggered_id:
+        return current_index or 0
+    current_index = current_index or 0
+    if ctx.triggered_id == "services-slide-prev":
+        return (current_index - 1) % 3
+    if ctx.triggered_id == "services-slide-next":
+        return (current_index + 1) % 3
+    return current_index
+
+
+@app.callback(
+    Output("services-filter-store", "data"),
+    Input("services-filter", "value"),
+    State("services-slide-index", "data"),
+    State("services-filter-store", "data"),
+)
+def update_services_filter_store(filter_value, slide_index, store):
+    if slide_index is None or store is None:
+        return store or {"0": "common-wo-sbol", "1": "alpha", "2": "alpha"}
+    key = str(slide_index)
+    return {**store, key: filter_value}
 
 
 @app.callback(
     [
-        Output("chart-gigaquery", "figure"),
-        Output("gigaquery-kpi-value", "children"),
-        Output("gigaquery-kpi-badge", "children"),
+        Output("services-chart-title", "children"),
+        Output("services-kpi-value", "children"),
+        Output("services-kpi-badge", "children"),
+        Output("chart-services", "figure"),
+        Output("services-filter", "options"),
+        Output("services-filter", "value"),
     ],
-    Input("gigaquery-filter", "value"),
+    Input("services-slide-index", "data"),
+    Input("services-filter", "value"),
+    State("services-filter-store", "data"),
 )
-def update_gigaquery(filter_value):
-    df, y_min, y_max = get_gigaquery_data(filter_value)
+def update_services_content(slide_index, filter_value, filter_store):
+    from dash import ctx
+
+    slide_index = slide_index or 0
+    filter_store = filter_store or {"0": "common-wo-sbol", "1": "alpha", "2": "alpha"}
+    key = str(slide_index)
+    # При переключении слайда показываем сохранённый фильтр, иначе — текущий выбор
+    if ctx.triggered_id == "services-slide-index":
+        current_filter = filter_store.get(key, "common-wo-sbol" if slide_index == 0 else "alpha")
+    else:
+        current_filter = filter_value or filter_store.get(key, "common-wo-sbol" if slide_index == 0 else "alpha")
+
+    if slide_index == 0:
+        df, y_min, y_max = get_gigasearch_data(current_filter)
+    elif slide_index == 1:
+        df, y_min, y_max = get_summarization_data(current_filter)
+    else:
+        df, y_min, y_max = get_gigaquery_data(current_filter)
+
     fig = line_chart_gigasearch(df, y_min, y_max)
     current = df["calls"].iloc[-1]
     pct = _pct_change_current_vs_previous(df["calls"])
-    return fig, format_kpi_value(current), kpi_badge_children(pct)
+    options = _get_services_options(slide_index)
+
+    return (
+        SERVICES_SLIDE_TITLES[slide_index],
+        format_kpi_value(current),
+        kpi_badge_children(pct),
+        fig,
+        options,
+        current_filter,
+    )
 
 # Apply dashboard background to the outer page
 app.index_string = """<!DOCTYPE html>

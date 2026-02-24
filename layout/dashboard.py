@@ -48,26 +48,18 @@ ALPHA_SIGMA_FILTER_OPTIONS = [
 ]
 
 
+SERVICES_SLIDE_TITLES = ["Вызовы GigaSearch", "Вызовы Summarization", "Вызовы GigaQuery"]
+
+
 def build_dashboard_content() -> html.Div:
-    """Inner dashboard: header + two rows of charts."""
-    # Initial GigaSearch state (common-wo-sbol)
-    df_gigasearch, y_min, y_max = get_gigasearch_data("common-wo-sbol")
-    current_gs = df_gigasearch["calls"].iloc[-1]
-    pct_gs = _pct_change_current_vs_previous(df_gigasearch["calls"])
-    fig_gigasearch = line_chart_gigasearch(df_gigasearch, y_min, y_max)
+    """Inner dashboard: header + services carousel + row with initiatives."""
+    # Начальное состояние: первый слайд (GigaSearch)
+    df_gs, y_min, y_max = get_gigasearch_data("common-wo-sbol")
+    fig_initial = line_chart_gigasearch(df_gs, y_min, y_max)
+    current_initial = df_gs["calls"].iloc[-1]
+    pct_initial = _pct_change_current_vs_previous(df_gs["calls"])
 
-    # Initial Summarization (Alpha 0–2M) and GigaQuery (Alpha 0–2M)
-    df_summ, ys_min, ys_max = get_summarization_data("alpha")
-    current_summ = df_summ["calls"].iloc[-1]
-    pct_summ = _pct_change_current_vs_previous(df_summ["calls"])
-    fig_summarization = line_chart_gigasearch(df_summ, ys_min, ys_max)
-
-    df_gq, yg_min, yg_max = get_gigaquery_data("alpha")
-    current_giga = df_gq["calls"].iloc[-1]
-    pct_giga = _pct_change_current_vs_previous(df_gq["calls"])
-    fig_gigaquery = line_chart_gigasearch(df_gq, yg_min, yg_max)
-
-    # График инициатив: данные, итоги и прирост за последний месяц
+    # График инициатив
     df_init = get_initiatives_data()
     fig_initiatives = line_chart_initiatives(df_init)
     total_gs = int(df_init["gigasearch"].sum())
@@ -79,6 +71,11 @@ def build_dashboard_content() -> html.Div:
 
     return html.Div(
         [
+            dcc.Store(id="services-slide-index", data=0),
+            dcc.Store(
+                id="services-filter-store",
+                data={"0": "common-wo-sbol", "1": "alpha", "2": "alpha"},
+            ),
             html.Header(
                 html.H1("IDP Dashboard", className="dashboard-title"),
                 className="dashboard-header",
@@ -87,110 +84,65 @@ def build_dashboard_content() -> html.Div:
                 [
                     html.Div(
                         [
-                            html.H2("IDP GigaSearch", className="chart-card-title"),
                             html.Div(
                                 [
-                                    html.Span(
-                                        format_kpi_value(current_gs),
-                                        id="gigasearch-kpi-value",
-                                        className="kpi-value",
+                                    html.Button(
+                                        "‹",
+                                        id="services-slide-prev",
+                                        className="services-slide-arrow",
+                                        title="Предыдущий график",
+                                        n_clicks=0,
                                     ),
-                                    html.Span(
-                                        kpi_badge_children(pct_gs),
-                                        id="gigasearch-kpi-badge",
-                                        className="kpi-badge",
-                                        style={"backgroundColor": COLORS["kpi_badge_bg"], "border": f"1px solid {COLORS['kpi_badge_border']}"},
+                                    html.Div(
+                                        [
+                                            html.H2(
+                                                SERVICES_SLIDE_TITLES[0],
+                                                id="services-chart-title",
+                                                className="chart-card-title services-slide-title",
+                                            ),
+                                            html.Div(
+                                                [
+                                                    html.Span(
+                                                        format_kpi_value(current_initial),
+                                                        id="services-kpi-value",
+                                                        className="kpi-value",
+                                                    ),
+                                                    html.Span(
+                                                        kpi_badge_children(pct_initial),
+                                                        id="services-kpi-badge",
+                                                        className="kpi-badge",
+                                                        style={"backgroundColor": COLORS["kpi_badge_bg"], "border": f"1px solid {COLORS['kpi_badge_border']}"},
+                                                    ),
+                                                ],
+                                                className="kpi-row",
+                                            ),
+                                        ],
+                                        className="services-slide-title-kpi-block",
+                                    ),
+                                    html.Button(
+                                        "›",
+                                        id="services-slide-next",
+                                        className="services-slide-arrow",
+                                        title="Следующий график",
+                                        n_clicks=0,
                                     ),
                                 ],
-                                className="kpi-row",
+                                className="services-slide-header",
                             ),
                             dcc.Graph(
-                                figure=fig_gigasearch,
-                                id="chart-gigasearch",
+                                figure=fig_initial,
+                                id="chart-services",
                                 config={"responsive": True, "displayModeBar": False},
                                 className="dashboard-chart",
                             ),
                             dcc.RadioItems(
-                                id="gigasearch-filter",
+                                id="services-filter",
                                 options=GIGASEARCH_FILTER_OPTIONS,
                                 value="common-wo-sbol",
-                                className="gigasearch-filter-buttons",
+                                className="services-filter-buttons",
                             ),
                         ],
-                        className="chart-card gigasearch-card",
-                    ),
-                ],
-                className="charts-row",
-            ),
-            html.Div(
-                [
-                    html.Div(
-                        [
-                            html.H2("Summarization", className="chart-card-title"),
-                            html.Div(
-                                [
-                                    html.Span(
-                                        format_kpi_value(current_summ),
-                                        id="summarization-kpi-value",
-                                        className="kpi-value",
-                                    ),
-                                    html.Span(
-                                        kpi_badge_children(pct_summ),
-                                        id="summarization-kpi-badge",
-                                        className="kpi-badge",
-                                        style={"backgroundColor": COLORS["kpi_badge_bg"], "border": f"1px solid {COLORS['kpi_badge_border']}"},
-                                    ),
-                                ],
-                                className="kpi-row",
-                            ),
-                            dcc.Graph(
-                                figure=fig_summarization,
-                                id="chart-summarization",
-                                config={"responsive": True, "displayModeBar": False},
-                                className="dashboard-chart",
-                            ),
-                            dcc.RadioItems(
-                                id="summarization-filter",
-                                options=ALPHA_SIGMA_FILTER_OPTIONS,
-                                value="alpha",
-                                className="chart-filter-buttons",
-                            ),
-                        ],
-                        className="chart-card",
-                    ),
-                    html.Div(
-                        [
-                            html.H2("GigaQuery", className="chart-card-title"),
-                            html.Div(
-                                [
-                                    html.Span(
-                                        format_kpi_value(current_giga),
-                                        id="gigaquery-kpi-value",
-                                        className="kpi-value",
-                                    ),
-                                    html.Span(
-                                        kpi_badge_children(pct_giga),
-                                        id="gigaquery-kpi-badge",
-                                        className="kpi-badge",
-                                        style={"backgroundColor": COLORS["kpi_badge_bg"], "border": f"1px solid {COLORS['kpi_badge_border']}"},
-                                    ),
-                                ],
-                                className="kpi-row",
-                            ),
-                            dcc.Graph(
-                                figure=fig_gigaquery,
-                                id="chart-gigaquery",
-                                config={"responsive": True, "displayModeBar": False},
-                                className="dashboard-chart",
-                            ),
-                            dcc.RadioItems(
-                                id="gigaquery-filter",
-                                options=ALPHA_SIGMA_FILTER_OPTIONS,
-                                value="alpha",
-                                className="chart-filter-buttons",
-                            ),
-                        ],
-                        className="chart-card",
+                        className="chart-card services-carousel-card",
                     ),
                 ],
                 className="charts-row",

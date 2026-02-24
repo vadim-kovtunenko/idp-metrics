@@ -74,6 +74,113 @@
   grid-column: 1 / -1;
 }
 
+/* Блок-слайдер: IDP GigaSearch / Summarization / GigaQuery с переключением стрелками */
+.services-carousel-card {
+  grid-column: 1 / -1;
+}
+
+/* Заголовок + KPI в одном блоке; стрелки центрированы по вертикали относительно этого блока */
+.services-slide-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: nowrap;
+}
+
+.services-slide-title-kpi-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem; /* минимальное расстояние между заголовком и строкой KPI */
+  min-width: 0;
+}
+
+.services-slide-title-kpi-block .chart-card-title {
+  margin: 0;
+}
+
+.services-slide-arrow {
+  flex-shrink: 0;
+  width: 2.3rem;   /* +15% от 2rem */
+  height: 2.3rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #333;
+  font-size: 1.75rem; /* +15% от 1.5rem */
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, opacity 0.15s;
+}
+
+.services-slide-arrow:hover {
+  color: #000;
+  opacity: 0.85;
+}
+
+.services-slide-title {
+  margin: 0;
+  min-width: 0;
+}
+
+/* Фильтр в блоке-слайдере — тот же стиль, что у остальных фильтров */
+.services-filter-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+  width: 92%;
+  max-width: 100%;
+  margin-top: 0.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  min-width: 0;
+}
+
+.services-filter-buttons label {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0.5rem 0.25rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #333;
+  background-color: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.services-filter-buttons label:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.25);
+}
+
+.services-filter-buttons label:has(input:checked) {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-color: rgba(0, 0, 0, 0.5);
+  color: #000;
+}
+
+.services-filter-buttons label:has(input:checked):hover {
+  background-color: rgba(0, 0, 0, 0.28);
+  border-color: rgba(0, 0, 0, 0.6);
+}
+
+.services-filter-buttons input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* GigaSearch filter: row of buttons below the graph, slightly narrower than graph, no radio circles */
 .gigasearch-filter-buttons {
   display: flex;
