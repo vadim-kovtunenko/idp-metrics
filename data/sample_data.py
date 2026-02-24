@@ -167,6 +167,26 @@ def get_initiatives_data() -> pd.DataFrame:
     return df
 
 
+# Источники RAG: Alpha (SberHelp, ECM, KA, Custom) и Sigma (ECM, M-App, K+, Custom).
+# Значения в диапазоне 3–40 для отображения на круговой диаграмме.
+RAG_SOURCES = {
+    "alpha": {"SberHelp": 12, "ECM": 25, "KA": 8, "Custom": 18},
+    "sigma": {"ECM": 22, "M-App": 15, "K+": 31, "Custom": 7},
+}
+
+
+def get_rag_sources_data(filter_key: str) -> list[dict]:
+    """
+    Возвращает данные для графика «Источники RAG» по выбранному фильтру.
+    filter_key: "alpha" | "sigma".
+    Возвращает список словарей [{"label": str, "value": int}, ...].
+    """
+    if filter_key not in RAG_SOURCES:
+        filter_key = "alpha"
+    raw = RAG_SOURCES[filter_key]
+    return [{"label": k, "value": v} for k, v in raw.items()]
+
+
 def get_rag_common_sbol_monthly_calls() -> pd.DataFrame:
     """RAG Common & SBOL — при необходимости добавьте data/rag_common_sbol.json."""
     months = _generate_monthly_index(12)

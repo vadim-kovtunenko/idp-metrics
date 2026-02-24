@@ -5,7 +5,14 @@ Each chart function accepts data and returns a Plotly figure with shared theme.
 import pandas as pd
 import plotly.graph_objects as go
 
-from config.theme import COLORS, CHART_ACCENT_COLORS, get_chart_layout_overrides, hex_to_rgba
+from config.theme import (
+    CHART_FRAME_BG,
+    COLORS,
+    CHART_ACCENT_COLORS,
+    RAG_SOURCE_COLORS,
+    get_chart_layout_overrides,
+    hex_to_rgba,
+)
 
 
 def _format_month_axis(dates: pd.DatetimeIndex) -> list:
@@ -266,5 +273,47 @@ def line_chart_initiatives(df: pd.DataFrame) -> go.Figure:
                 ),
             )
         )
+    fig.update_layout(**layout)
+    return fig
+
+
+def donut_chart_rag_sources(labels: list, values: list) -> go.Figure:
+    """
+    Круговая диаграмма-бублик «Источники RAG».
+    Легенда справа от графика, те же цвета что и в других графиках.
+    """
+    colors = [RAG_SOURCE_COLORS[i % len(RAG_SOURCE_COLORS)] for i in range(len(labels))]
+    layout = get_chart_layout_overrides()
+    layout["showlegend"] = True
+    layout["legend"] = {
+        "orientation": "v",
+        "yanchor": "middle",
+        "y": 0.5,
+        "xanchor": "left",
+        "x": 1.02,
+        "font": {"color": COLORS["axis_text"], "size": 11},
+        "bgcolor": "rgba(0,0,0,0)",
+        "bordercolor": "rgba(0,0,0,0)",
+        "itemwidth": 30,
+    }
+    layout["margin"]["t"] = 36
+    layout["margin"]["b"] = 50
+    layout["margin"]["l"] = 20
+    layout["margin"]["r"] = 140
+    layout["height"] = 266
+
+    fig = go.Figure(
+        data=[
+            go.Pie(
+                labels=labels,
+                values=values,
+                hole=0.55,
+                marker=dict(colors=colors, line=dict(color=CHART_FRAME_BG, width=2)),
+                textinfo="none",
+                hoverinfo="label+value+percent",
+                sort=False,
+            )
+        ]
+    )
     fig.update_layout(**layout)
     return fig

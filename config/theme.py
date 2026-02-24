@@ -22,6 +22,9 @@ COLORS = {
 # Акцентные цвета графиков: несколько серий — 47E3FF, 3B8BFA, 3541FB
 CHART_ACCENT_COLORS = ("#47E3FF", "#3B8BFA", "#3541FB")
 
+# Цвета для графика «Источники RAG» (4 категории, в том же стиле)
+RAG_SOURCE_COLORS = ("#47E3FF", "#3B8BFA", "#3541FB", "#48B785")
+
 # Plotly layout defaults for charts (shared across all charts)
 CHART_FRAME_BG = "#FAFAFA"  # фон рамки и области графика
 

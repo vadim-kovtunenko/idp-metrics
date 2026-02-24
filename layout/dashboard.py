@@ -12,13 +12,14 @@ if str(_root) not in sys.path:
 
 from dash import dcc, html
 
-from components.charts import line_chart_gigasearch, line_chart_initiatives
+from components.charts import donut_chart_rag_sources, line_chart_gigasearch, line_chart_initiatives
 from components.kpi import kpi_badge_children, format_kpi_value
 from config.theme import COLORS
 from data.sample_data import (
     get_gigaquery_data,
     get_gigasearch_data,
     get_initiatives_data,
+    get_rag_sources_data,
     get_summarization_data,
 )
 
@@ -62,6 +63,12 @@ def build_dashboard_content() -> html.Div:
     # График инициатив
     df_init = get_initiatives_data()
     fig_initiatives = line_chart_initiatives(df_init)
+
+    # График «Источники RAG» (бублик)
+    rag_data = get_rag_sources_data("alpha")
+    rag_labels = [d["label"] for d in rag_data]
+    rag_values = [d["value"] for d in rag_data]
+    fig_rag = donut_chart_rag_sources(rag_labels, rag_values)
     total_gs = int(df_init["gigasearch"].sum())
     delta_gs = int(df_init["gigasearch"].iloc[-1])
     total_gq = int(df_init["gigaquery"].sum())
@@ -153,92 +160,126 @@ def build_dashboard_content() -> html.Div:
                         [
                             html.Div(
                                 [
-                                    html.H2(
-                                        "Количество заведенных инициатив",
-                                        className="chart-card-title",
+                                    html.Div(
+                                        [
+                                            html.Div(
+                                                [
+                                                    html.H2(
+                                                        "Количество заведенных инициатив",
+                                                        className="chart-card-title",
+                                                    ),
+                                                    dcc.Graph(
+                                                        figure=fig_initiatives,
+                                                        id="chart-initiatives",
+                                                        config={"responsive": True, "displayModeBar": False},
+                                                        className="dashboard-chart initiatives-chart",
+                                                    ),
+                                                ],
+                                                className="chart-card initiatives-chart-card",
+                                            ),
+                                            html.Div(
+                                                [
+                                                    html.Div(
+                                                        [
+                                                            html.H2(
+                                                                "GigaSearch",
+                                                                className="chart-card-title",
+                                                            ),
+                                                            html.Div(
+                                                                [
+                                                                    html.Span(
+                                                                        str(total_gs),
+                                                                        className="kpi-value",
+                                                                    ),
+                                                                    html.Span(
+                                                                        f"+{delta_gs}" if delta_gs >= 0 else str(delta_gs),
+                                                                        className="kpi-badge initiative-delta-badge",
+                                                                        style={"backgroundColor": COLORS["kpi_badge_bg"], "border": f"1px solid {COLORS['kpi_badge_border']}"},
+                                                                    ),
+                                                                ],
+                                                                className="kpi-row",
+                                                            ),
+                                                        ],
+                                                        className="initiative-plate",
+                                                    ),
+                                                    html.Div(
+                                                        [
+                                                            html.H2(
+                                                                "GigaQuery",
+                                                                className="chart-card-title",
+                                                            ),
+                                                            html.Div(
+                                                                [
+                                                                    html.Span(
+                                                                        str(total_gq),
+                                                                        className="kpi-value",
+                                                                    ),
+                                                                    html.Span(
+                                                                        f"+{delta_gq}" if delta_gq >= 0 else str(delta_gq),
+                                                                        className="kpi-badge initiative-delta-badge",
+                                                                        style={"backgroundColor": COLORS["kpi_badge_bg"], "border": f"1px solid {COLORS['kpi_badge_border']}"},
+                                                                    ),
+                                                                ],
+                                                                className="kpi-row",
+                                                            ),
+                                                        ],
+                                                        className="initiative-plate",
+                                                    ),
+                                                    html.Div(
+                                                        [
+                                                            html.H2(
+                                                                "Summarization",
+                                                                className="chart-card-title",
+                                                            ),
+                                                            html.Div(
+                                                                [
+                                                                    html.Span(
+                                                                        str(total_summ),
+                                                                        className="kpi-value",
+                                                                    ),
+                                                                    html.Span(
+                                                                        f"+{delta_summ}" if delta_summ >= 0 else str(delta_summ),
+                                                                        className="kpi-badge initiative-delta-badge",
+                                                                        style={"backgroundColor": COLORS["kpi_badge_bg"], "border": f"1px solid {COLORS['kpi_badge_border']}"},
+                                                                    ),
+                                                                ],
+                                                                className="kpi-row",
+                                                            ),
+                                                        ],
+                                                        className="initiative-plate",
+                                                    ),
+                                                ],
+                                                className="initiative-plates-row",
+                                            ),
+                                        ],
+                                        className="initiatives-left-block",
                                     ),
-                                    dcc.Graph(
-                                        figure=fig_initiatives,
-                                        id="chart-initiatives",
-                                        config={"responsive": True, "displayModeBar": False},
-                                        className="dashboard-chart initiatives-chart",
+                                    html.Div(
+                                        [
+                                            html.H2(
+                                                "Источники RAG",
+                                                className="chart-card-title",
+                                            ),
+                                            dcc.Graph(
+                                                figure=fig_rag,
+                                                id="chart-rag",
+                                                config={"responsive": True, "displayModeBar": False},
+                                                className="dashboard-chart rag-donut-chart",
+                                            ),
+                                            dcc.RadioItems(
+                                                id="rag-filter",
+                                                options=[
+                                                    {"label": "Alpha", "value": "alpha"},
+                                                    {"label": "Sigma", "value": "sigma"},
+                                                ],
+                                                value="alpha",
+                                                className="rag-filter-buttons",
+                                            ),
+                                        ],
+                                        className="chart-card rag-chart-card",
                                     ),
                                 ],
-                                className="chart-card initiatives-chart-card",
-                            ),
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            html.H2(
-                                                "GigaSearch",
-                                                className="chart-card-title",
-                                            ),
-                                            html.Div(
-                                                [
-                                                    html.Span(
-                                                        str(total_gs),
-                                                        className="kpi-value",
-                                                    ),
-                                                    html.Span(
-                                                        f"+{delta_gs}" if delta_gs >= 0 else str(delta_gs),
-                                                        className="kpi-badge initiative-delta-badge",
-                                                        style={"backgroundColor": COLORS["kpi_badge_bg"], "border": f"1px solid {COLORS['kpi_badge_border']}"},
-                                                    ),
-                                                ],
-                                                className="kpi-row",
-                                            ),
-                                        ],
-                                        className="initiative-plate",
-                                    ),
-                                    html.Div(
-                                        [
-                                            html.H2(
-                                                "GigaQuery",
-                                                className="chart-card-title",
-                                            ),
-                                            html.Div(
-                                                [
-                                                    html.Span(
-                                                        str(total_gq),
-                                                        className="kpi-value",
-                                                    ),
-                                                    html.Span(
-                                                        f"+{delta_gq}" if delta_gq >= 0 else str(delta_gq),
-                                                        className="kpi-badge initiative-delta-badge",
-                                                        style={"backgroundColor": COLORS["kpi_badge_bg"], "border": f"1px solid {COLORS['kpi_badge_border']}"},
-                                                    ),
-                                                ],
-                                                className="kpi-row",
-                                            ),
-                                        ],
-                                        className="initiative-plate",
-                                    ),
-                                    html.Div(
-                                        [
-                                            html.H2(
-                                                "Summarization",
-                                                className="chart-card-title",
-                                            ),
-                                            html.Div(
-                                                [
-                                                    html.Span(
-                                                        str(total_summ),
-                                                        className="kpi-value",
-                                                    ),
-                                                    html.Span(
-                                                        f"+{delta_summ}" if delta_summ >= 0 else str(delta_summ),
-                                                        className="kpi-badge initiative-delta-badge",
-                                                        style={"backgroundColor": COLORS["kpi_badge_bg"], "border": f"1px solid {COLORS['kpi_badge_border']}"},
-                                                    ),
-                                                ],
-                                                className="kpi-row",
-                                            ),
-                                        ],
-                                        className="initiative-plate",
-                                    ),
-                                ],
-                                className="initiative-plates-row",
+                                className="initiatives-charts-row",
                             ),
                         ],
                         className="initiatives-column",
