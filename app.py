@@ -16,10 +16,10 @@ import webbrowser
 import dash
 from dash.dependencies import Input, Output, State
 
-from components.charts import line_chart_gigasearch
+from components.charts import donut_chart_rag_sources, line_chart_gigasearch
 from components.kpi import format_kpi_value, kpi_badge_children
 from config.theme import COLORS
-from data.sample_data import get_gigaquery_data, get_gigasearch_data, get_summarization_data
+from data.sample_data import get_gigaquery_data, get_gigasearch_data, get_rag_sources_data, get_summarization_data
 from layout.dashboard import (
     ALPHA_SIGMA_FILTER_OPTIONS,
     GIGASEARCH_FILTER_OPTIONS,
@@ -119,6 +119,20 @@ def update_services_content(slide_index, filter_value, filter_store):
         options,
         current_filter,
     )
+
+
+@app.callback(
+    Output("chart-rag", "figure"),
+    Input("rag-filter", "value"),
+)
+def update_rag_chart(filter_value):
+    """Обновление графика «Источники RAG» при смене фильтра Alpha/Sigma."""
+    filter_value = filter_value or "alpha"
+    data = get_rag_sources_data(filter_value)
+    labels = [d["label"] for d in data]
+    values = [d["value"] for d in data]
+    return donut_chart_rag_sources(labels, values)
+
 
 # Apply dashboard background to the outer page
 app.index_string = """<!DOCTYPE html>
