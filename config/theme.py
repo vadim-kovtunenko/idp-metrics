@@ -1,32 +1,63 @@
 """
 Theme configuration for the IDP Dashboard.
-Centralized colors and chart styling for consistency and easy maintenance.
+Dark theme based on reference design.
 """
 
-# Dashboard & chart colors (Hex)
+# Dashboard colors (Dark theme)
 COLORS = {
-    "dashboard_bg": "#DFE4E9",
-    "chart_bg": "#FAFAFA",
-    "line_primary": "#3541FB",  # один график — по умолчанию
-    "axis_grid": "#333333",
-    "axis_text": "#000000",
-    "title_text": "#000000",
-    "axis_tick_muted": "#333333",
-    # Плашки KPI: фон и стрелка
-    "kpi_badge_bg": "#DBFDEC",
-    "kpi_badge_border": "#b8e8c8",
+    # Backgrounds
+    "dashboard_bg": "#FFFFFF",
+    "card_bg": "#FFFFFF",
+    "card_bg_secondary": "#F0F0F5",
+    "card_bg_dark": "#1A1A1A",
+    "card_bg_accent": "#A8D5E2",
+    
+    # Text
+    "text_primary": "#1A1A1A",
+    "text_secondary": "#6B6B6B",
+    "text_muted": "#9B9B9B",
+    "text_on_dark": "#FFFFFF",
+    "text_on_accent": "#1A1A1A",
+    
+    # Borders and dividers
+    "border": "#E8E8E8",
+    "divider": "#F0F0F0",
+    
+    # Chart colors
+    "chart_bg": "#FFFFFF",
+    "chart_grid": "#E8E8E8",
+    "chart_line": "#1A1A1A",
+    "chart_line_secondary": "#A8D5E2",
+    "chart_fill": "rgba(26, 26, 26, 0.1)",
+    
+    # Accent colors
+    "accent_blue": "#A8D5E2",
+    "accent_blue_dark": "#7FB8D0",
+    "accent_black": "#1A1A1A",
+    "accent_gray": "#F0F0F5",
+    
+    # KPI badges
+    "kpi_badge_bg": "#1A1A1A",
+    "kpi_badge_text": "#FFFFFF",
     "kpi_arrow_positive": "#48B785",
     "kpi_arrow_negative": "#F87171",
+    
+    # Buttons
+    "button_primary": "#1A1A1A",
+    "button_primary_text": "#FFFFFF",
+    "button_secondary": "#A8D5E2",
+    "button_secondary_text": "#1A1A1A",
+    "button_hover": "#333333",
 }
 
-# Акцентные цвета графиков: несколько серий — 47E3FF, 3B8BFA, 3541FB
-CHART_ACCENT_COLORS = ("#47E3FF", "#3B8BFA", "#3541FB")
+# Chart accent colors for multiple series
+CHART_ACCENT_COLORS = ("#1A1A1A", "#A8D5E2", "#7FB8D0")
 
-# Цвета для графика «Источники RAG» (4 категории, в том же стиле)
-RAG_SOURCE_COLORS = ("#47E3FF", "#3B8BFA", "#3541FB", "#48B785")
+# RAG source colors
+RAG_SOURCE_COLORS = ("#1A1A1A", "#A8D5E2", "#7FB8D0", "#48B785")
 
-# Plotly layout defaults for charts (shared across all charts)
-CHART_FRAME_BG = "#FAFAFA"  # фон рамки и области графика
+# Plotly layout defaults
+CHART_FRAME_BG = "#FFFFFF"
 
 
 def hex_to_rgba(hex_color: str, alpha: float) -> str:
@@ -39,24 +70,28 @@ def hex_to_rgba(hex_color: str, alpha: float) -> str:
 
 
 def get_chart_layout_overrides():
-    """Return common layout overrides for all charts (background, font, grid)."""
+    """Return common layout overrides for all charts."""
     return {
         "paper_bgcolor": CHART_FRAME_BG,
         "plot_bgcolor": CHART_FRAME_BG,
-        "font": {"color": COLORS["axis_text"], "family": "Helvetica, Arial, sans-serif"},
+        "font": {"color": COLORS["text_primary"], "family": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", "size": 12},
         "xaxis": {
-            "showgrid": False,
-            "linecolor": COLORS["axis_grid"],
-            "tickfont": {"color": COLORS["axis_tick_muted"], "size": 11},
-            "zerolinecolor": COLORS["axis_grid"],
+            "showgrid": True,
+            "gridcolor": COLORS["chart_grid"],
+            "gridwidth": 1,
+            "linecolor": COLORS["border"],
+            "tickfont": {"color": COLORS["text_muted"], "size": 11},
+            "zerolinecolor": COLORS["border"],
         },
         "yaxis": {
-            "showgrid": False,
-            "linecolor": COLORS["axis_grid"],
-            "tickfont": {"color": COLORS["axis_tick_muted"], "size": 11},
-            "zerolinecolor": COLORS["axis_grid"],
+            "showgrid": True,
+            "gridcolor": COLORS["chart_grid"],
+            "gridwidth": 1,
+            "linecolor": COLORS["border"],
+            "tickfont": {"color": COLORS["text_muted"], "size": 11},
+            "zerolinecolor": COLORS["border"],
         },
-        "margin": {"t": 50, "b": 50, "l": 60, "r": 30},
-        "height": 266,  # 30% less than 380px
+        "margin": {"t": 40, "b": 40, "l": 50, "r": 30},
+        "height": 280,
         "showlegend": False,
     }

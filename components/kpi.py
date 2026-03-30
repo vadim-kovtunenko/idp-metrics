@@ -1,6 +1,7 @@
 """
-KPI block component: current value + percentage change (triangle + badge).
+KPI components: value formatting and percentage change badges.
 """
+from typing import Any
 from urllib.parse import quote
 
 from dash import html
@@ -18,7 +19,7 @@ def format_kpi_value(value: float) -> str:
 
 
 def _rounded_triangle_svg_data_uri(up: bool, color: str) -> str:
-    """SVG triangle with rounded corners, as data URI. Up=True = ▲, Up=False = ▼."""
+    """SVG triangle with rounded corners, as data URI."""
     path_d = "M 8 3 L 13 13 L 3 13 Z" if up else "M 8 13 L 13 3 L 3 3 Z"
     svg = (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">'
@@ -28,7 +29,7 @@ def _rounded_triangle_svg_data_uri(up: bool, color: str) -> str:
     return "data:image/svg+xml," + quote(svg)
 
 
-def kpi_badge_children(pct_change: float):
+def kpi_badge_children(pct_change: float) -> list[Any]:
     """Return [Img, Span] for the KPI badge (for use in callbacks)."""
     is_positive = pct_change >= 0
     arrow_color = COLORS["kpi_arrow_positive"] if is_positive else COLORS["kpi_arrow_negative"]
@@ -42,38 +43,3 @@ def kpi_badge_children(pct_change: float):
         ),
         html.Span(pct_str, className="kpi-badge-text"),
     ]
-
-
-def kpi_card(title: str, current: float, pct_change: float) -> html.Div:
-    """
-    Card with title and KPI row: large current value + rounded triangle + badge with %.
-    """
-    is_positive = pct_change >= 0
-    arrow_color = COLORS["kpi_arrow_positive"] if is_positive else COLORS["kpi_arrow_negative"]
-    triangle_src = _rounded_triangle_svg_data_uri(is_positive, arrow_color)
-    pct_str = f"{abs(pct_change):.0f}%"
-
-    return html.Div(
-        [
-            html.H2(title, className="chart-card-title"),
-            html.Div(
-                [
-                    html.Span(format_kpi_value(current), className="kpi-value"),
-                    html.Span(
-                        [
-                            html.Img(
-                                src=triangle_src,
-                                alt="▲" if is_positive else "▼",
-                                className="kpi-triangle",
-                            ),
-                            html.Span(pct_str, className="kpi-badge-text"),
-                        ],
-                        className="kpi-badge",
-                        style={"backgroundColor": COLORS["kpi_badge_bg"], "border": f"1px solid {COLORS['kpi_badge_border']}"},
-                    ),
-                ],
-                className="kpi-row",
-            ),
-        ],
-        className="chart-card-header",
-    )
