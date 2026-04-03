@@ -385,16 +385,42 @@ def form_elements():
                 ],
                 style={"display": "flex", "marginBottom": "24px"},
             ),
-            # Checkbox and Radio
+            # Checkbox and Radio (visual representation)
             html.Div(
                 [
-                    html.Label(
-                        [dcc.Input(type="checkbox", value=True, style={"marginRight": "8px"}), "Checkbox Label"],
-                        style={"fontSize": "14px", "color": COLORS["text_primary"], "marginRight": "24px", "cursor": "pointer"},
+                    html.Div(
+                        [
+                            html.Div(
+                                style={
+                                    "width": "16px",
+                                    "height": "16px",
+                                    "borderRadius": "3px",
+                                    "border": f"2px solid {COLORS['accent_blue']}",
+                                    "backgroundColor": COLORS["accent_blue"],
+                                    "marginRight": "8px",
+                                    "display": "inline-block",
+                                },
+                            ),
+                            html.Span("Checkbox (checked)", style={"fontSize": "14px", "color": COLORS["text_primary"]}),
+                        ],
+                        style={"display": "flex", "alignItems": "center", "marginRight": "24px", "cursor": "pointer"},
                     ),
-                    html.Label(
-                        [dcc.Input(type="radio", name="radio", value=True, style={"marginRight": "8px"}), "Radio Label"],
-                        style={"fontSize": "14px", "color": COLORS["text_primary"], "cursor": "pointer"},
+                    html.Div(
+                        [
+                            html.Div(
+                                style={
+                                    "width": "16px",
+                                    "height": "16px",
+                                    "borderRadius": "50%",
+                                    "border": f"2px solid {COLORS['accent_blue']}",
+                                    "backgroundColor": COLORS["accent_blue"],
+                                    "marginRight": "8px",
+                                    "display": "inline-block",
+                                },
+                            ),
+                            html.Span("Radio (selected)", style={"fontSize": "14px", "color": COLORS["text_primary"]}),
+                        ],
+                        style={"display": "flex", "alignItems": "center", "cursor": "pointer"},
                     ),
                 ],
                 style={"marginTop": "16px"},

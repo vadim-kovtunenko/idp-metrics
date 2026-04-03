@@ -9,9 +9,12 @@ from components.kpi import format_kpi_value, kpi_badge_children
 from components.dashboard_components import wallet_cards_row, assets_list, allocation_list, allocation_legend
 from config.theme import COLORS
 from data.sample_data import (
-    get_gigasearch_data,
     get_initiatives_data,
     get_rag_sources_data,
+    get_service_calls_data,
+    get_service_kpi,
+    SERVICE_FILTER_OPTIONS,
+    TIME_PERIODS,
 )
 
 
@@ -25,14 +28,6 @@ def pct_change_current_vs_previous(series) -> float:
     return (current - prev) / prev * 100
 
 
-GIGASEARCH_FILTER_OPTIONS = [
-    {"label": "common-wo-sbol", "value": "common-wo-sbol"},
-    {"label": "common-sbol", "value": "common-sbol"},
-    {"label": "alpha", "value": "alpha"},
-    {"label": "sigma", "value": "sigma"},
-    {"label": "alpha-sbol", "value": "alpha-sbol"},
-]
-
 ALPHA_SIGMA_FILTER_OPTIONS = [
     {"label": "Alpha", "value": "alpha"},
     {"label": "Sigma", "value": "sigma"},
@@ -44,23 +39,22 @@ SERVICES_SLIDE_TITLES = ["GigaSearch", "Summarization", "GigaQuery"]
 
 def build_dashboard_content() -> html.Div:
     """Build dashboard matching reference screenshot layout."""
-    # Initial state: first slide (GigaSearch)
-    df_gs, y_min, y_max = get_gigasearch_data("common-wo-sbol")
-    fig_initial = line_chart(df_gs, y_min, y_max, show_secondary=True)
-    current_initial = df_gs["calls"].iloc[-1]
-    pct_initial = pct_change_current_vs_previous(df_gs["calls"])
+    # Get initial data for GigaSearch with "all" period
+    df_initial = get_service_calls_data(service="gigasearch", period="all")
+    kpi = get_service_kpi("gigasearch")
     
-    # Format values
-    current_formatted = format_kpi_value(current_initial)
-    pct_str = f"{abs(pct_initial):.1f}%"
+    # Build chart
+    y_min = 0
+    y_max = max(df_initial["calls"]) * 1.2
+    fig_initial = line_chart(df_initial, y_min, y_max, show_secondary=True)
     
-    # Calculate delta value
-    if len(df_gs["calls"]) >= 2:
-        delta_value = current_initial - df_gs["calls"].iloc[-2]
-        delta_formatted = f"+{format_kpi_value(delta_value)}" if delta_value >= 0 else f"-{format_kpi_value(abs(delta_value))}"
-    else:
-        delta_formatted = "+0"
-
+    # Format KPI values
+    current_formatted = format_kpi_value(kpi["current"])
+    delta_sign = "+" if kpi["delta"] >= 0 else ""
+    delta_formatted = f"{delta_sign}{format_kpi_value(kpi['delta'])}"
+    pct_value = abs(kpi['delta_pct'])
+    pct_str = f"{pct_value:.1f}%"
+    
     # Initiatives chart
     df_init = get_initiatives_data()
     fig_initiatives = multi_line_chart(
@@ -77,7 +71,7 @@ def build_dashboard_content() -> html.Div:
     rag_labels = [d["label"] for d in rag_data]
     rag_values = [d["value"] for d in rag_data]
     fig_rag = donut_chart(rag_labels, rag_values)
-    
+
     # Totals for initiative plates
     total_gs = int(df_init["gigasearch"].sum())
     delta_gs = int(df_init["gigasearch"].iloc[-1])
@@ -107,7 +101,7 @@ def build_dashboard_content() -> html.Div:
             "value_secondary": f"{int(df_init['summarization'].iloc[-1])} SUM",
         },
     ]
-    
+
     # Allocation data
     total_calls = total_gs + total_gq + total_summ
     if total_calls > 0:
@@ -116,7 +110,7 @@ def build_dashboard_content() -> html.Div:
         summ_percent = int((total_summ / total_calls) * 100)
     else:
         gs_percent = gq_percent = summ_percent = 33
-    
+
     allocations_data = [
         {"name": "GigaSearch", "staked_percent": gs_percent, "available_percent": max(0, 100 - gs_percent - 20)},
         {"name": "GigaQuery", "staked_percent": gq_percent, "available_percent": max(0, 100 - gq_percent - 20)},
@@ -126,17 +120,15 @@ def build_dashboard_content() -> html.Div:
     return html.Div(
         [
             dcc.Store(id="services-slide-index", data=0),
-            dcc.Store(
-                id="services-filter-store",
-                data={"0": "common-wo-sbol", "1": "alpha", "2": "alpha"},
-            ),
-            
+            dcc.Store(id="service-filter", data="gigasearch"),
+            dcc.Store(id="time-period-filter", data="all"),
+
             # Header
             html.Header(
                 html.H1("Dashboard", className="dashboard-title"),
                 className="dashboard-header",
             ),
-            
+
             # Main grid: left column (chart + assets) and right column (wallet + allocation)
             html.Div(
                 [
@@ -153,10 +145,11 @@ def build_dashboard_content() -> html.Div:
                                                 [
                                                     html.Div(
                                                         [
-                                                            html.Span(current_formatted, className="kpi-value"),
+                                                            html.Span(current_formatted, className="kpi-value", id="service-kpi-value"),
                                                             html.Div(
-                                                                kpi_badge_children(pct_initial),
+                                                                kpi_badge_children(pct_value),
                                                                 className="kpi-badge",
+                                                                id="service-kpi-badge",
                                                                 style={
                                                                     "backgroundColor": COLORS["kpi_badge_bg"],
                                                                     "color": COLORS["kpi_badge_text"],
@@ -165,25 +158,38 @@ def build_dashboard_content() -> html.Div:
                                                         ],
                                                         className="kpi-row",
                                                     ),
-                                                    html.Div(delta_formatted, className="text-secondary", style={"marginTop": "4px", "fontSize": "14px"}),
+                                                    html.Div(delta_formatted, className="text-secondary", id="service-kpi-delta", style={"marginTop": "4px", "fontSize": "14px"}),
                                                 ],
                                                 style={"flex": "1"},
                                             ),
-                                            # Time range buttons
+                                            # Time period filter buttons
                                             html.Div(
                                                 [
-                                                    html.Button("24H", className="chart-control-btn"),
-                                                    html.Button("7D", className="chart-control-btn active"),
-                                                    html.Button("30D", className="chart-control-btn"),
-                                                    html.Button("90D", className="chart-control-btn"),
-                                                    html.Button("LIVE", className="chart-control-btn"),
+                                                    html.Button(
+                                                        "All",
+                                                        className="chart-control-btn active",
+                                                        id="btn-period-all",
+                                                        n_clicks=0,
+                                                    ),
+                                                    html.Button(
+                                                        "Last 3 months",
+                                                        className="chart-control-btn",
+                                                        id="btn-period-3",
+                                                        n_clicks=0,
+                                                    ),
+                                                    html.Button(
+                                                        "Last 6 months",
+                                                        className="chart-control-btn",
+                                                        id="btn-period-6",
+                                                        n_clicks=0,
+                                                    ),
                                                 ],
                                                 className="chart-controls",
                                             ),
                                         ],
                                         style={"display": "flex", "justifyContent": "space-between", "alignItems": "flex-start", "marginBottom": "16px"},
                                     ),
-                                    
+
                                     # Chart
                                     dcc.Graph(
                                         figure=fig_initial,
@@ -191,13 +197,21 @@ def build_dashboard_content() -> html.Div:
                                         config={"responsive": True, "displayModeBar": False},
                                         className="dashboard-chart",
                                     ),
-                                    
-                                    # Service selector
+
+                                    # Service selector dropdown
                                     html.Div(
                                         [
-                                            html.Button("‹", id="services-slide-prev", className="chart-control-btn", n_clicks=0),
-                                            html.Span(SERVICES_SLIDE_TITLES[0], id="services-chart-title", style={"margin": "0 16px", "fontWeight": "500"}),
-                                            html.Button("›", id="services-slide-next", className="chart-control-btn", n_clicks=0),
+                                            dcc.Dropdown(
+                                                options=SERVICE_FILTER_OPTIONS,
+                                                value="gigasearch",
+                                                clearable=False,
+                                                id="service-filter-dropdown",
+                                                style={
+                                                    "width": "200px",
+                                                    "borderRadius": "8px",
+                                                    "border": f"1px solid {COLORS['border']}",
+                                                },
+                                            ),
                                         ],
                                         style={"display": "flex", "justifyContent": "center", "alignItems": "center", "marginTop": "16px"},
                                     ),
@@ -245,7 +259,7 @@ def build_dashboard_content() -> html.Div:
                                         ],
                                         style={"marginBottom": "4px"},
                                     ),
-                                    html.Div(f"{int(current_initial)} units", className="text-muted", style={"fontSize": "13px", "marginBottom": "20px"}),
+                                    html.Div(f"{int(kpi['current'])} units", className="text-muted", style={"fontSize": "13px", "marginBottom": "20px"}),
                                     
                                     # Wallet cards
                                     wallet_cards_row(
