@@ -2,13 +2,22 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyo
 
-# Virtual environment
-venv/
+# Виртуальное окружение
 .venv/
+venv/
+env/
 
-# Environment variables
+# Окружение
 .env
+.env.local
 
-# macOS
+# ОС
 .DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
