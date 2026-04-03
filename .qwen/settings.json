@@ -5,7 +5,8 @@
       "Bash(python *)",
       "Bash(mkdir *)",
       "Bash(pkill *)",
-      "Bash(sleep *)"
+      "Bash(sleep *)",
+      "Bash(curl *)"
     ]
   },
   "$version": 3

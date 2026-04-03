@@ -11,6 +11,7 @@ Arrays can contain any number of values (12, 13, 14, ...).
 Charts always display the last 12 months. Just append new months to arrays.
 """
 import json
+import random
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -47,6 +48,13 @@ RAG_SOURCES: dict[str, dict[str, int]] = {
     "sigma": {"ECM": 22, "M-App": 15, "K+": 31, "Custom": 7},
 }
 
+# Service display names and colors
+SERVICE_CONFIG = {
+    "gigasearch": {"name": "GigaSearch", "base_calls": 2_500_000, "volatility": 0.15},
+    "gigaquery": {"name": "GigaQuery", "base_calls": 800_000, "volatility": 0.20},
+    "summarization": {"name": "Summarization", "base_calls": 1_200_000, "volatility": 0.18},
+}
+
 
 def _load_json(name: str) -> dict | list:
     """Load JSON from data/{name}.json with caching."""
@@ -74,6 +82,130 @@ def _last_n(values: list | tuple, n: int = MONTHS_DISPLAY) -> list:
     """Get last n values (or all if fewer). Always returns list."""
     seq = list(values)
     return seq[-n:] if len(seq) >= n else seq
+
+
+def _generate_synthetic_data(
+    service: str,
+    months: int = 24,
+    growth_rate: float = 0.03,
+    seasonality: bool = True,
+) -> list[int]:
+    """
+    Generate synthetic monthly call data for a service.
+    
+    Args:
+        service: Service key (gigasearch, gigaquery, summarization)
+        months: Number of months to generate
+        growth_rate: Monthly growth rate (0.03 = 3%)
+        seasonality: Add seasonal variation
+        
+    Returns:
+        List of call counts
+    """
+    config = SERVICE_CONFIG[service]
+    base = config["base_calls"]
+    volatility = config["volatility"]
+    
+    data = []
+    for i in range(months):
+        # Base with growth
+        value = base * (1 + growth_rate) ** i
+        
+        # Seasonality (higher in winter, lower in summer)
+        if seasonality:
+            month_idx = i % 12
+            seasonal_factor = 1 + 0.15 * (1 if month_idx in [0, 1, 11] else -0.1 if month_idx in [5, 6, 7] else 0)
+            value *= seasonal_factor
+        
+        # Random noise
+        noise = random.uniform(1 - volatility, 1 + volatility)
+        value *= noise
+        
+        data.append(int(value))
+    
+    return data
+
+
+# Cache for synthetic data
+_synthetic_cache: dict[str, list[int]] = {}
+
+
+def _get_or_generate_synthetic(service: str, months: int = 24) -> list[int]:
+    """Get cached or generate synthetic data for service."""
+    cache_key = f"{service}_{months}"
+    if cache_key not in _synthetic_cache:
+        random.seed(hash(service) % 2**32)  # Reproducible per service
+        _synthetic_cache[cache_key] = _generate_synthetic_data(service, months)
+    return _synthetic_cache[cache_key]
+
+
+# Time period filters
+TIME_PERIODS = {
+    "all": {"label": "All", "months": 24},
+    "last_3": {"label": "Last 3 months", "months": 3},
+    "last_6": {"label": "Last 6 months", "months": 6},
+}
+
+# Service filter options
+SERVICE_FILTER_OPTIONS = [
+    {"label": "GigaSearch", "value": "gigasearch"},
+    {"label": "GigaQuery", "value": "gigaquery"},
+    {"label": "Summarization", "value": "summarization"},
+]
+
+
+def get_service_calls_data(
+    service: str = "gigasearch",
+    period: str = "all",
+) -> pd.DataFrame:
+    """
+    Get service calls data for specified service and time period.
+    
+    Args:
+        service: Service key (gigasearch, gigaquery, summarization)
+        period: Time period (all, last_3, last_6)
+        
+    Returns:
+        DataFrame with 'calls' column indexed by month
+    """
+    months_count = TIME_PERIODS.get(period, TIME_PERIODS["all"])["months"]
+    values = _get_or_generate_synthetic(service, months=24)
+    
+    # Take only the last N months based on period
+    values = values[-months_count:]
+    n = len(values)
+    months = _generate_monthly_index(n)
+    df = pd.DataFrame({"calls": values}, index=months)
+    return df
+
+
+def get_service_kpi(service: str = "gigasearch") -> dict:
+    """
+    Get KPI metrics for a service.
+    
+    Args:
+        service: Service key (gigasearch, gigaquery, summarization)
+        
+    Returns:
+        Dict with current_calls, delta_calls, delta_pct, total_calls
+    """
+    values = _get_or_generate_synthetic(service, months=24)
+    
+    current = values[-1]
+    previous = values[-2] if len(values) >= 2 else current
+    
+    delta = current - previous
+    delta_pct = ((current - previous) / previous * 100) if previous > 0 else 0
+    
+    # Total calls in millions (sum of all months)
+    total = sum(values)
+    
+    return {
+        "current": current,
+        "delta": delta,
+        "delta_pct": delta_pct,
+        "total": total,
+    }
 
 
 def get_gigasearch_data(filter_key: str) -> tuple[pd.DataFrame, float, float]:
