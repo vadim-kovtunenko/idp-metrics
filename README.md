@@ -1,26 +1,36 @@
 # IDP Dashboard
 
-Дашборд с менеджерскими и аналитическими метриками. Расчёты выполняются в Python, визуализация — Plotly + Dash.
+Dashboard with managerial and analytical metrics. Calculations in Python, visualizations with Plotly + Dash.
 
-## Структура репозитория
+## Structure
 
 ```
 idp-dashboard/
-├── app.py                 # Точка входа, создание Dash-приложения
-├── config/
-│   └── theme.py           # Цвета и общие настройки графиков
-├── data/
-│   └── sample_data.py     # Загрузка и расчёт данных (заменить на реальные источники)
+├── app.py                 # Entry point, Dash app creation
+├── callbacks/
+│   ├── __init__.py        # Callbacks module export
+│   └── main.py            # All Dash callbacks
 ├── components/
-│   └── charts.py          # Переиспользуемые графики (Plotly)
+│   ├── __init__.py        # Components export
+│   ├── charts.py          # Reusable chart functions (Plotly)
+│   └── kpi.py             # KPI formatting and badges
+├── config/
+│   └── theme.py           # Colors and chart styling
+├── data/
+│   ├── sample_data.py     # Data loading and calculation functions
+│   ├── gigasearch.json    # GigaSearch data
+│   ├── summarization.json # Summarization data
+│   ├── gigaquery.json     # GigaQuery data
+│   └── initiatives.json   # Initiatives data
 ├── layout/
-│   └── dashboard.py       # Разметка дашборда, сетка графиков
+│   ├── __init__.py        # Layout export
+│   └── dashboard.py       # Dashboard layout structure
 ├── assets/
-│   └── custom.css         # Адаптивная вёрстка и стили
+│   └── custom.css         # Responsive styles
 └── requirements.txt
 ```
 
-## Запуск
+## Quick Start
 
 ```bash
 cd idp-dashboard
@@ -30,19 +40,43 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Откройте в браузере: http://localhost:8050
+Open in browser: http://localhost:8050
 
-## Текущие графики
+## Current Charts
 
-1. **RAG Common & SBOL** — линейный график вызовов сервисов по месяцам (ось Y: 20–45 млн).
-2. **RAG Common** — линейный график вызовов по месяцам (ось Y: 500 тыс.–3 млн).
+1. **Services Carousel** — Line chart with area fill, switchable between:
+   - GigaSearch (filters: common-wo-sbol, common-sbol, alpha, sigma, alpha-sbol)
+   - Summarization (filters: alpha, sigma, common)
+   - GigaQuery (filters: alpha, sigma, common)
 
-Оба графика расположены рядом, с адаптивной сеткой (на узких экранах — друг под другом).
+2. **Initiatives** — Multi-line chart showing initiatives count over time
 
-## Добавление новых метрик
+3. **RAG Sources** — Donut chart showing RAG source distribution (Alpha/Sigma)
 
-- Данные: добавить функцию в `data/` (или новый модуль), возвращающую `pd.DataFrame`.
-- График: добавить функцию в `components/charts.py` с использованием `config/theme.py`.
-- Разметка: добавить блок в `layout/dashboard.py` в `charts-row` или новую строку сетки.
+## Architecture
 
-Цвета и общие настройки осей вынесены в `config/theme.py` для единообразия.
+### Separation of Concerns
+
+| Layer | Directory | Responsibility |
+|-------|-----------|----------------|
+| **Entry Point** | `app.py` | App creation, server config |
+| **Callbacks** | `callbacks/` | Dash callback functions |
+| **UI Components** | `components/` | Reusable charts, KPI widgets |
+| **Layout** | `layout/` | Dashboard structure, grid |
+| **Data** | `data/` | Data loading, transformations |
+| **Config** | `config/` | Theme, colors, constants |
+
+### Adding New Metrics
+
+1. **Data**: Add function in `data/sample_data.py` (or new module) returning `pd.DataFrame`
+2. **Chart**: Add function in `components/charts.py` using `config/theme.py`
+3. **Layout**: Add block in `layout/dashboard.py`
+4. **Callbacks**: Add callback in `callbacks/main.py`
+
+## Key Improvements (Refactored)
+
+- **Consolidated chart functions**: Single `line_chart()` and `multi_line_chart()` instead of 5 duplicate functions
+- **Separated callbacks**: All callbacks moved to `callbacks/` module
+- **Type hints**: Added throughout the codebase
+- **Removed unused code**: Cleaned up dead functions and imports
+- **Better exports**: `__init__.py` files provide clean public APIs

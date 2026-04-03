@@ -1,522 +1,904 @@
-/* IDP Dashboard — adaptive layout, even stretch */
+/* IDP Dashboard - Modern Dark Theme Styles */
 
-:root {
-  --dashboard-bg: #DFE4E9;
-  --chart-bg: #FAFAFA;
-  --page-gap: 1.5rem;
-  --row-gap: 1.2rem; /* было 2rem, уменьшено на 40% */
-  --chart-height: 266px; /* 30% less than 380px */
-  --chart-label-color: #000000;
-  --font-main: Helvetica, Arial, sans-serif;
-  --kpi-value-size: 1.75rem;
-  --kpi-badge-height: 1.45rem;
+/* Reset and base */
+* {
+    box-sizing: border-box;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #FFFFFF;
+    color: #1A1A1A;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Single root: equal padding left/right, full width */
+/* Dashboard container */
 .dashboard {
-  width: 100%;
-  min-height: 100vh;
-  padding: 1rem var(--page-gap);
-  background-color: var(--dashboard-bg);
-  font-family: var(--font-main);
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 40px;
 }
 
+/* Header */
 .dashboard-header {
-  margin-bottom: 1rem;
-  text-align: center;
+    margin-bottom: 32px;
 }
 
 .dashboard-title {
-  color: #000;
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: #1A1A1A;
+    margin: 0;
+    letter-spacing: -0.5px;
 }
 
-/* Two equal columns; minmax(0,1fr) so Plotly min-width doesn't break equal split */
+/* Layout grid */
 .charts-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--row-gap);
-  width: 100%;
+    display: grid;
+    gap: 24px;
+    margin-bottom: 24px;
 }
 
-.charts-row + .charts-row {
-  margin-top: var(--row-gap);
+/* Main content grid - two columns */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
 }
 
-@media (max-width: 900px) {
-  .charts-row {
-    grid-template-columns: minmax(0, 1fr);
-  }
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
-/* Grid item: must shrink so columns stay equal (Plotly has min-width) */
+/* Card styles */
 .chart-card {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  background-color: var(--chart-bg);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.chart-card.gigasearch-card {
-  grid-column: 1 / -1;
-}
-
-/* Блок-слайдер: IDP GigaSearch / Summarization / GigaQuery с переключением стрелками */
-.services-carousel-card {
-  grid-column: 1 / -1;
-}
-
-/* Заголовок + KPI в одном блоке; стрелки центрированы по вертикали относительно этого блока */
-.services-slide-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: nowrap;
-}
-
-.services-slide-title-kpi-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.1rem; /* минимальное расстояние между заголовком и строкой KPI */
-  min-width: 0;
-}
-
-.services-slide-title-kpi-block .chart-card-title {
-  margin: 0;
-}
-
-.services-slide-arrow {
-  flex-shrink: 0;
-  width: 2.3rem;   /* +15% от 2rem */
-  height: 2.3rem;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: #333;
-  font-size: 1.75rem; /* +15% от 1.5rem */
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.15s, opacity 0.15s;
-}
-
-.services-slide-arrow:hover {
-  color: #000;
-  opacity: 0.85;
-}
-
-.services-slide-title {
-  margin: 0;
-  min-width: 0;
-}
-
-/* Фильтр в блоке-слайдере — тот же стиль, что у остальных фильтров */
-.services-filter-buttons {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 0.4rem;
-  width: 92%;
-  max-width: 100%;
-  margin-top: 0.5rem;
-  margin-left: auto;
-  margin-right: auto;
-  min-width: 0;
-}
-
-.services-filter-buttons label {
-  flex: 1 1 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  padding: 0.5rem 0.25rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #333;
-  background-color: rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
-}
-
-.services-filter-buttons label:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.25);
-}
-
-.services-filter-buttons label:has(input:checked) {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-color: rgba(0, 0, 0, 0.5);
-  color: #000;
-}
-
-.services-filter-buttons label:has(input:checked):hover {
-  background-color: rgba(0, 0, 0, 0.28);
-  border-color: rgba(0, 0, 0, 0.6);
-}
-
-.services-filter-buttons input {
-  position: absolute;
-  width: 0;
-  height: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* GigaSearch filter: row of buttons below the graph, slightly narrower than graph, no radio circles */
-.gigasearch-filter-buttons {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 0.4rem;
-  width: 92%;
-  max-width: 100%;
-  margin-top: 0.5rem;
-  margin-left: auto;
-  margin-right: auto;
-  min-width: 0;
-}
-
-.gigasearch-filter-buttons label {
-  flex: 1 1 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  padding: 0.5rem 0.25rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #333;
-  background-color: rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
-}
-
-.gigasearch-filter-buttons label:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.25);
-}
-
-.gigasearch-filter-buttons input,
-.chart-filter-buttons input {
-  position: absolute;
-  width: 0;
-  height: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Shared filter bar (Summarization, GigaQuery): same look as GigaSearch bar, slightly narrower */
-.chart-filter-buttons {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 0.4rem;
-  width: 82%;
-  max-width: 100%;
-  margin-top: 0.5rem;
-  margin-left: auto;
-  margin-right: auto;
-  min-width: 0;
-}
-
-.chart-filter-buttons label {
-  flex: 1 1 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  padding: 0.5rem 0.25rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #333;
-  background-color: rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
-}
-
-.chart-filter-buttons label:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.25);
-}
-
-/* Selected state — чёрно-белые тона */
-.gigasearch-filter-buttons label:has(input:checked),
-.chart-filter-buttons label:has(input:checked) {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-color: rgba(0, 0, 0, 0.5);
-  color: #000;
-}
-
-.gigasearch-filter-buttons label:has(input:checked):hover,
-.chart-filter-buttons label:has(input:checked):hover {
-  background-color: rgba(0, 0, 0, 0.28);
-  border-color: rgba(0, 0, 0, 0.6);
-}
-
-.chart-card-header {
-  flex-shrink: 0;
-  text-align: center;
-  margin-bottom: 0;
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid #E8E8E8;
 }
 
 .chart-card-title {
-  color: var(--chart-label-color);
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0 0 0.35rem 0;
-  text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6B6B6B;
+    margin: 0 0 16px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
+/* Main chart card (full width) */
+.main-chart-card {
+    grid-column: 1 / -1;
+}
+
+/* KPI styles */
 .kpi-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .kpi-value {
-  color: #000;
-  font-size: var(--kpi-value-size);
-  font-weight: 700;
-  line-height: 1;
+    font-size: 36px;
+    font-weight: 600;
+    color: #1A1A1A;
+    letter-spacing: -1px;
 }
 
 .kpi-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  height: var(--kpi-badge-height);
-  line-height: var(--kpi-badge-height);
-  box-sizing: border-box;
-  color: #1a3d2e;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 0 1rem;
-  border-radius: 6px;
-  font-family: var(--font-main);
-}
-
-.kpi-triangle {
-  width: 0.85rem;
-  height: 0.85rem;
-  display: inline-block;
-  flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 .kpi-badge-text {
-  color: #1a3d2e;
+    color: #FFFFFF;
 }
 
-/* Graph: fill card width */
-.dashboard-chart {
-  width: 100%;
-  min-width: 0;
-  height: var(--chart-height) !important;
-  max-height: var(--chart-height) !important;
-  flex: 1 1 auto;
-  margin-top: 0;
+.kpi-triangle {
+    width: 12px;
+    height: 12px;
 }
 
-.dashboard-chart .js-plotly-plot,
-.dashboard-chart .plotly,
-.dashboard-chart .plot-container {
-  width: 100% !important;
-  min-width: 0 !important;
-  height: var(--chart-height) !important;
+/* Wallet cards row */
+.wallet-cards-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 20px;
 }
 
-/* Колонка: на всю ширину ряда (как верхний график вызовов), внутри — два графика в строку и плашки */
-.initiatives-column {
-  grid-column: 1 / -1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+@media (max-width: 768px) {
+    .wallet-cards-row {
+        grid-template-columns: 1fr;
+    }
 }
 
-/* Ряд: слева — график инициатив + плашки, справа — график RAG на ту же высоту */
-.initiatives-charts-row {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  gap: var(--row-gap);
-  width: 100%;
-  min-width: 0;
+/* Wallet card */
+.wallet-card {
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    transition: transform 0.2s ease;
 }
 
-/* Левый блок: только график инициатив и плашки по его ширине */
-.initiatives-left-block {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.wallet-card:hover {
+    transform: translateY(-2px);
 }
 
-.initiatives-left-block .initiative-plates-row {
-  width: 100%;
-  max-width: 100%;
+.wallet-card-light {
+    background: #F0F0F5;
 }
 
-/* Карточка — только заголовок и график (рамка графика) */
-.initiatives-chart-card {
-  min-width: 0;
+.wallet-card-dark {
+    background: #1A1A1A;
 }
 
-/* Карточка «Источники RAG»: высота = график инициатив + плашки; бублик растягивается */
-.rag-chart-card {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
+.wallet-card-accent {
+    background: #A8D5E2;
 }
 
-.rag-chart-card .rag-donut-chart {
-  flex: 1;
-  min-height: 0;
+.wallet-card-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.rag-chart-card .rag-donut-chart .js-plotly-plot,
-.rag-chart-card .rag-donut-chart .plotly {
-  height: 100% !important;
+.wallet-card-label {
+    font-size: 13px;
+    color: #6B6B6B;
+    margin-bottom: 8px;
+    font-weight: 500;
 }
 
+.wallet-card-dark .wallet-card-label {
+    color: #9B9B9B;
+}
+
+.wallet-card-accent .wallet-card-label {
+    color: #1A1A1A;
+}
+
+.wallet-card-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1A1A1A;
+}
+
+.wallet-card-dark .wallet-card-value {
+    color: #FFFFFF;
+}
+
+.wallet-card-accent .wallet-card-value {
+    color: #1A1A1A;
+}
+
+/* Assets list */
+.assets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.asset-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid #F0F0F0;
+}
+
+.asset-item:last-child {
+    border-bottom: none;
+}
+
+.asset-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.asset-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #F0F0F5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.asset-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1A1A1A;
+}
+
+.asset-subname {
+    font-size: 12px;
+    color: #9B9B9B;
+}
+
+.asset-value {
+    text-align: right;
+}
+
+.asset-value-primary {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1A1A1A;
+}
+
+.asset-value-secondary {
+    font-size: 13px;
+    color: #9B9B9B;
+}
+
+.asset-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.asset-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.asset-btn-vote {
+    background: #A8D5E2;
+    color: #1A1A1A;
+}
+
+.asset-btn-vote:hover {
+    background: #7FB8D0;
+}
+
+.asset-btn-stake {
+    background: #1A1A1A;
+    color: #FFFFFF;
+}
+
+.asset-btn-stake:hover {
+    background: #333333;
+}
+
+/* Allocation bars */
+.allocation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.allocation-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.allocation-name {
+    width: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1A1A1A;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.allocation-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.allocation-bar-container {
+    flex: 1;
+    height: 8px;
+    background: #F0F0F5;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+}
+
+.allocation-bar-staked {
+    height: 100%;
+    background: #A8D5E2;
+    border-radius: 4px;
+}
+
+.allocation-bar-available {
+    height: 100%;
+    background: #E8E8E8;
+    border-radius: 4px;
+}
+
+.allocation-bar-dotted {
+    height: 100%;
+    background: repeating-linear-gradient(
+        90deg,
+        #F0F0F5 0,
+        #F0F0F5 4px,
+        transparent 4px,
+        transparent 8px
+    );
+}
+
+.allocation-percent {
+    width: 45px;
+    text-align: right;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1A1A1A;
+}
+
+/* Allocation legend */
+.allocation-legend {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: #6B6B6B;
+}
+
+.allocation-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.allocation-legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+/* Chart controls */
+.chart-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.chart-control-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #E8E8E8;
+    background: #FFFFFF;
+    color: #6B6B6B;
+    transition: all 0.2s ease;
+}
+
+.chart-control-btn:hover {
+    border-color: #1A1A1A;
+    color: #1A1A1A;
+}
+
+.chart-control-btn.active {
+    background: #1A1A1A;
+    color: #FFFFFF;
+    border-color: #1A1A1A;
+}
+
+/* Services carousel */
+.services-carousel-card {
+    position: relative;
+}
+
+.services-slide-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.services-slide-arrow {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid #E8E8E8;
+    background: #FFFFFF;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.services-slide-arrow:hover {
+    border-color: #1A1A1A;
+    background: #F0F0F5;
+}
+
+.services-slide-title-kpi-block {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.services-slide-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6B6B6B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+/* Filter buttons */
+.services-filter-buttons,
 .rag-filter-buttons {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 0.4rem;
-  width: 92%;
-  max-width: 100%;
-  margin-top: 0.5rem;
-  margin-left: auto;
-  margin-right: auto;
-  min-width: 0;
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
 }
 
+.services-filter-buttons label,
 .rag-filter-buttons label {
-  flex: 1 1 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  padding: 0.5rem 0.25rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #333;
-  background-color: rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #E8E8E8;
+    background: #FFFFFF;
+    color: #6B6B6B;
+    transition: all 0.2s ease;
 }
 
-.rag-filter-buttons label:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.25);
+.services-filter-buttons input[type="radio"],
+.rag-filter-buttons input[type="radio"] {
+    display: none;
 }
 
-.rag-filter-buttons label:has(input:checked) {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-color: rgba(0, 0, 0, 0.5);
-  color: #000;
+.services-filter-buttons input[type="radio"]:checked + label,
+.rag-filter-buttons input[type="radio"]:checked + label {
+    background: #1A1A1A;
+    color: #FFFFFF;
+    border-color: #1A1A1A;
 }
 
-.rag-filter-buttons label:has(input:checked):hover {
-  background-color: rgba(0, 0, 0, 0.28);
-  border-color: rgba(0, 0, 0, 0.6);
+/* Initiatives section */
+.initiatives-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
 }
 
-.rag-filter-buttons input {
-  position: absolute;
-  width: 0;
-  height: 0;
-  opacity: 0;
-  pointer-events: none;
+@media (max-width: 900px) {
+    .initiatives-column {
+        grid-template-columns: 1fr;
+    }
 }
 
-/* Легенда графика инициатив: бублик ближе к тексту (сдвиг подписи влево) */
-#chart-initiatives .legend .legendtext,
-#chart-initiatives .legend .legendtext > text,
-#chart-initiatives .legend [class*="legendtext"] {
-  transform: translateX(-8px);
+.initiatives-left-block {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
-/* Плашки: в одну строку, высота фиксирована */
 .initiative-plates-row {
-  display: flex;
-  flex-direction: row;
-  gap: 0.75rem;
-  min-width: 0;
-  flex: 0 0 auto;
-  min-height: 92px;
-  box-sizing: border-box;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
 }
 
-/* Каждая плашка — отдельная карточка в стиле основных графиков, равная ширина */
+@media (max-width: 600px) {
+    .initiative-plates-row {
+        grid-template-columns: 1fr;
+    }
+}
+
 .initiative-plate {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.75rem 0.5rem;
-  background-color: var(--chart-bg);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  box-sizing: border-box;
-  text-align: center;
+    background: #F0F0F5;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
 }
 
 .initiative-plate .chart-card-title {
-  margin: 0 0 0.2rem 0;
-  color: #000;
-}
-
-.initiative-plate .kpi-value {
-  color: #000;
-}
-
-.initiative-plate .kpi-row {
-  margin: 0;
+    margin-bottom: 12px;
 }
 
 .initiative-delta-badge {
-  font-size: 0.8rem;
+    background: #1A1A1A;
+    color: #FFFFFF;
+    border: none;
 }
 
-@media (max-width: 480px) {
-  .dashboard {
-    padding: 0.75rem var(--page-gap);
-  }
-  .dashboard-chart,
-  .dashboard-chart .js-plotly-plot,
-  .dashboard-chart .plotly {
-    height: 210px !important;
-  }
+/* Graph container */
+.dashboard-chart {
+    width: 100%;
+}
+
+.initiatives-chart,
+.rag-donut-chart {
+    margin-top: 8px;
+}
+
+/* View all link */
+.view-all-link {
+    font-size: 13px;
+    color: #6B6B6B;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.view-all-link:hover {
+    color: #1A1A1A;
+}
+
+/* Utility classes */
+.text-muted {
+    color: #9B9B9B;
+}
+
+.text-secondary {
+    color: #6B6B6B;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #F0F0F5;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #D0D0D0;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #A0A0A0;
+}
+
+/* ================================
+   Sidebar Navigation Styles
+   ================================ */
+.sidebar {
+    width: 260px;
+    min-height: 100vh;
+    background: #FFFFFF;
+    border-right: 1px solid #E8E8E8;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 100;
+}
+
+.sidebar-container {
+    width: 260px;
+    flex-shrink: 0;
+}
+
+.sidebar-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #6B6B6B;
+    margin-bottom: 4px;
+    text-decoration: none;
+}
+
+.sidebar-menu-item:hover {
+    background: #F0F0F5;
+    color: #1A1A1A;
+}
+
+.sidebar-menu-item.active {
+    background: #F0F0F5;
+    color: #A8D5E2;
+    font-weight: 500;
+}
+
+.sidebar-menu-item svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+.sidebar-menu-item span:first-child {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* ================================
+   Page Content Styles
+   ================================ */
+.page-content {
+    flex: 1;
+    margin-left: 260px;
+    min-height: 100vh;
+    background: #FFFFFF;
+    overflow-y: auto;
+}
+
+.dashboard-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 40px;
+}
+
+/* ================================
+   UI Kit Styles
+   ================================ */
+.uikit-page {
+    max-width: 1200px;
+    margin: 0;
+    padding: 0;
+}
+
+.uikit-content-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 40px;
+}
+
+.uikit-section {
+    margin-bottom: 40px;
+}
+
+.uikit-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1A1A1A;
+    margin: 0 0 24px 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #E8E8E8;
+}
+
+/* UI Kit Cards */
+.uikit-card {
+    padding: 24px;
+    border-radius: 12px;
+    background: #FFFFFF;
+    border: 1px solid #E8E8E8;
+    margin-bottom: 24px;
+}
+
+/* UI Kit Color Swatches */
+.color-swatch {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.color-swatch-preview {
+    width: 100%;
+    height: 80px;
+    border-radius: 8px;
+    border: 1px solid #E8E8E8;
+}
+
+.color-swatch-name {
+    font-size: 12px;
+    color: #6B6B6B;
+}
+
+.color-swatch-value {
+    font-size: 11px;
+    color: #9B9B9B;
+    font-family: monospace;
+}
+
+/* UI Kit Typography Samples */
+.typography-sample {
+    margin-bottom: 24px;
+}
+
+.typography-sample-title {
+    font-size: 12px;
+    color: #9B9B9B;
+    margin-top: 8px;
+}
+
+/* UI Kit Button Groups */
+.button-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+/* UI Kit Form Elements */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1A1A1A;
+    margin-bottom: 8px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid #E8E8E8;
+    font-size: 14px;
+    color: #1A1A1A;
+    background: #FFFFFF;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+    border-color: #A8D5E2;
+}
+
+.form-select {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid #E8E8E8;
+    font-size: 14px;
+    color: #1A1A1A;
+    background: #FFFFFF;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.form-select:focus {
+    border-color: #A8D5E2;
+}
+
+/* UI Kit Table Styles */
+.uikit-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #FFFFFF;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #E8E8E8;
+}
+
+.uikit-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6B6B6B;
+    border-bottom: 1px solid #E8E8E8;
+    background: #F0F0F5;
+}
+
+.uikit-table td {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #1A1A1A;
+    border-bottom: 1px solid #E8E8E8;
+}
+
+.uikit-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* UI Kit Badge Styles */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.badge-success {
+    background: #48B785;
+    color: #FFFFFF;
+}
+
+.badge-warning {
+    background: #FF9800;
+    color: #FFFFFF;
+}
+
+.badge-error {
+    background: #F87171;
+    color: #FFFFFF;
+}
+
+.badge-info {
+    background: #A8D5E2;
+    color: #1A1A1A;
+}
+
+/* UI Kit Icon Button */
+.icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid #E8E8E8;
+    background: #FFFFFF;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn:hover {
+    border-color: #1A1A1A;
+    background: #F0F0F5;
+}
+
+/* UI Kit Spacing Guide */
+.spacing-guide {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 24px;
+}
+
+.spacing-bar {
+    flex: 1;
+    background: #A8D5E2;
+    border-radius: 2px;
+    margin-bottom: 8px;
+}
+
+.spacing-label {
+    font-size: 12px;
+    color: #9B9B9B;
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+/* ================================
+   Responsive Adjustments
+   ================================ */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+        padding: 24px 16px;
+    }
+    
+    .page-content {
+        margin-left: 200px;
+    }
+    
+    .uikit-page {
+        padding: 24px 20px;
+    }
 }
